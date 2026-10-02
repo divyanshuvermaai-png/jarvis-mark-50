@@ -1,0 +1,724 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  --cyan: #00e5ff;
+  --cyan-glow: rgba(0, 229, 255, 0.6);
+  --cyan-dim: rgba(0, 229, 255, 0.15);
+  --blue: #0077ff;
+  --blue-glow: rgba(0, 119, 255, 0.5);
+  --emerald: #00ff88;
+  --bg-dark: #000000;
+  --bg-hud: #010409;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-dark);
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--cyan);
+  user-select: none;
+}
+
+/* ── CRT & Holographic Overlays ── */
+.scanline-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 229, 255, 0.02) 2px,
+    rgba(0, 229, 255, 0.02) 4px
+  );
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+}
+
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 998;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 5, 15, 0.95) 100%);
+}
+
+/* ── Terminal Container ── */
+.terminal-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000000;
+  z-index: 10;
+  padding: 30px 50px 70px 50px;
+  overflow: hidden;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.terminal-wrapper.dissolving {
+  opacity: 0;
+  transform: scale(1.04);
+  filter: blur(8px);
+}
+
+/* ── Telemetry Header Bar ── */
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.25);
+  padding-bottom: 14px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.header-left {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.divyanshu-logo-mark,
+.stark-logo-mark {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #ffffff;
+  text-shadow: 0 0 12px var(--cyan);
+  border-left: 3px solid var(--cyan);
+  padding-left: 10px;
+  margin-right: 4px;
+}
+
+.header-badge {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+.header-badge.pulse {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.header-right {
+  display: flex;
+  gap: 24px;
+  color: rgba(0, 229, 255, 0.7);
+  font-size: 12px;
+}
+
+/* ── Terminal Main Body ── */
+.terminal-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.terminal-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 20px;
+}
+
+.terminal-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.terminal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 2px;
+}
+
+.terminal-line {
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 1px;
+  color: #cceeff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.terminal-line .status-ok {
+  color: var(--emerald);
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(0, 255, 136, 0.7);
+  margin-left: 8px;
+}
+
+.terminal-line .status-verified {
+  color: #ffffff;
+  background: rgba(0, 255, 136, 0.25);
+  border: 1px solid var(--emerald);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: bold;
+  text-shadow: 0 0 14px var(--emerald);
+  margin-left: 8px;
+  animation: pulseGlow 1.2s infinite alternate;
+}
+
+.terminal-line .status-online {
+  color: #ffffff;
+  background: rgba(0, 229, 255, 0.25);
+  border: 1px solid var(--cyan);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: bold;
+  text-shadow: 0 0 16px var(--cyan);
+  margin-left: 8px;
+  animation: pulseGlow 1s infinite alternate;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 17px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: blink 0.65s step-end infinite;
+  margin-left: 6px;
+}
+
+.cursor.static {
+  animation: none;
+  opacity: 1;
+}
+
+.dissolve-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ── Background Telemetry Sidebar (Hex / Packet Stream) ── */
+.terminal-telemetry-sidebar {
+  width: 220px;
+  border-left: 1px solid rgba(0, 229, 255, 0.15);
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0.5;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(0, 229, 255, 0.6);
+  user-select: none;
+}
+
+.hex-stream {
+  overflow: hidden;
+  height: 80%;
+  font-family: monospace;
+}
+
+/* ── Progress Footer ── */
+.terminal-footer {
+  position: absolute;
+  bottom: 25px;
+  left: 50px;
+  right: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(0, 229, 255, 0.8);
+}
+
+.progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(0, 229, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #0044ff, #00e5ff 80%, #ffffff 100%);
+  box-shadow: 0 0 12px var(--cyan);
+  transition: width 0.15s ease-out;
+}
+
+/* ── Reactor Scene Container ── */
+.reactor-container {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reactor-container.active {
+  opacity: 1;
+}
+
+/* ── Heat Distortion / Energy Field Shimmer ── */
+@keyframes heatShimmer {
+  0%, 100% { filter: none; }
+  25% { filter: blur(0.3px); }
+  50% { filter: none; }
+  75% { filter: blur(0.2px); }
+}
+
+.reactor-hud-overlay {
+  animation: heatShimmer 0.8s ease-in-out infinite;
+}
+
+/* ── Holographic Interference Scan-Line Overlay ── */
+.reactor-container.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 229, 255, 0.018) 3px,
+    rgba(0, 229, 255, 0.018) 4px
+  );
+  animation: holoScanDrift 4s linear infinite;
+}
+
+@keyframes holoScanDrift {
+  0% { background-position-y: 0px; }
+  100% { background-position-y: 120px; }
+}
+
+/* Holographic flicker on the reactor overlay */
+.reactor-container.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 14;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(0, 229, 255, 0.04);
+  animation: holoFlicker 3.5s ease-in-out infinite;
+}
+
+@keyframes holoFlicker {
+  0%, 90%, 100% { opacity: 0; }
+  92% { opacity: 1; }
+  94% { opacity: 0; }
+  96% { opacity: 0.7; }
+}
+
+/* ── Singularity Energy Point ── */
+.singularity-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 8;
+  background: #000000;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.singularity-overlay.active {
+  opacity: 1;
+}
+
+.singularity-core-point {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 20px #ffffff, 0 0 40px var(--cyan), 0 0 80px var(--blue);
+  animation: singularityPulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.singularity-core-point.burst {
+  transform: scale(4.0);
+  box-shadow: 0 0 50px #ffffff, 0 0 120px var(--cyan), 0 0 200px #0077ff;
+  transition: all 0.35s ease-out;
+}
+
+.interface-generation-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 240;
+  background: transparent;
+}
+
+/* ── Logo Activation Overlay ── */
+.logo-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 20;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* ── Minimal Non-Blocking Reactor HUD ── */
+.reactor-hud-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  padding: 40px 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.hud-corner-tl {
+  position: absolute;
+  top: 40px;
+  left: 55px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: rgba(0, 229, 255, 0.7);
+}
+
+.hud-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: pulseGlow 1.5s infinite ease-in-out;
+}
+
+.hud-corner-tl {
+  position: absolute;
+  top: 40px;
+  left: 55px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.hud-brand {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.8);
+}
+
+.hud-data-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-sub {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: rgba(0, 229, 255, 0.45);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.hud-corner-tr {
+  position: absolute;
+  top: 40px;
+  right: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(0, 229, 255, 0.7);
+}
+
+.hud-indicator-bar {
+  width: 70px;
+  height: 4px;
+  background: rgba(0, 229, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-block;
+  margin: 3px 0;
+}
+
+.hud-bar-fill {
+  display: block;
+  width: 98%;
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+.hud-corner-bl {
+  position: absolute;
+  bottom: 40px;
+  left: 55px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(0, 229, 255, 0.7);
+}
+
+.hud-corner-br {
+  position: absolute;
+  bottom: 40px;
+  right: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(0, 229, 255, 0.7);
+}
+
+.hud-label {
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 11px;
+}
+
+.hud-val {
+  color: #ffffff;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+/* ── Clean Activation Hero Badge (Below Reactor) ── */
+.activation-badge-container {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 25;
+  font-family: 'Share Tech Mono', monospace;
+  text-align: center;
+}
+
+.divyanshu-badge-brand,
+.stark-badge-brand {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: rgba(0, 229, 255, 0.6);
+  margin-bottom: 2px;
+}
+
+.activation-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.8), 0 0 50px rgba(0, 229, 255, 0.5);
+  margin-bottom: 4px;
+  margin-left: 12px;
+}
+
+.title-reveal-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ffffff, #00e5ff, transparent);
+  margin: 4px auto 6px;
+  transition: width 0.15s ease-out;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+.activation-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan);
+  margin-left: 4px;
+}
+
+.status-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 10px #00ff88;
+}
+
+.logo-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--cyan);
+}
+.logo-corner.tl { top: -1px; left: -1px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+.logo-corner.tr { top: -1px; right: -1px; border-top: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+.logo-corner.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+.logo-corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+.logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: 18px;
+  color: #ffffff;
+  text-shadow: 0 0 25px var(--cyan), 0 0 60px rgba(0, 229, 255, 0.6);
+  margin-left: 18px;
+}
+
+.logo-badge {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 4px 18px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid var(--emerald);
+  color: var(--emerald);
+  font-size: 14px;
+  letter-spacing: 6px;
+  font-weight: bold;
+  border-radius: 3px;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+.logo-subtitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  letter-spacing: 10px;
+  color: rgba(200, 235, 255, 0.8);
+  margin-top: 18px;
+  margin-left: 10px;
+}
+
+.logo-meta {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(0, 229, 255, 0.5);
+  margin-top: 10px;
+}
+
+/* ── Collapse Shockwave Expanding to HUD ── */
+.singularity-collapse-flare {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 40px #ffffff, 0 0 100px var(--cyan), 0 0 180px var(--blue);
+  z-index: 250;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.singularity-collapse-flare.expand {
+  width: 600px;
+  height: 600px;
+  opacity: 0.85;
+  filter: blur(2px);
+}
+
+/* ── Seamless Fade to Main HUD (#010409) ── */
+.fade-to-hud {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-hud);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.fade-to-hud.active {
+  opacity: 1;
+}
+
+/* ── Subtle Skip Button ── */
+.skip-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 36px;
+  z-index: 500;
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: rgba(0, 229, 255, 0.5);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+
+.skip-btn:hover {
+  border-color: var(--cyan);
+  color: #ffffff;
+  background: rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+/* ── Keyframes ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 4px rgba(0, 229, 255, 0.2); }
+  50% { box-shadow: 0 0 14px rgba(0, 229, 255, 0.6); }
+  100% { box-shadow: 0 0 4px rgba(0, 229, 255, 0.2); }
+}
+
+@keyframes singularityPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(2.8); opacity: 1; box-shadow: 0 0 30px #ffffff, 0 0 60px var(--cyan); }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+

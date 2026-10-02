@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. Core - MK V</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Immersive Holographic Background -->
+    <div class="hud-bg"></div>
+    <div class="hud-grid"></div>
+    <canvas id="bgCanvas"></canvas>
+    <div class="vignette"></div>
+
+    <!-- Central Targeting Reticle & Hologram -->
+    <div class="center-hologram">
+        <div class="holo-globe">
+            <div class="equator"></div>
+            <div class="meridian"></div>
+            <div class="meridian m2"></div>
+            <div class="meridian m3"></div>
+        </div>
+        <div class="reticle-rings">
+            <svg viewBox="0 0 400 400">
+                <circle cx="200" cy="200" r="180" class="ring-outer" />
+                <circle cx="200" cy="200" r="150" class="ring-dashed" />
+                <circle cx="200" cy="200" r="100" class="ring-inner" />
+            </svg>
+        </div>
+        <div class="crosshairs">
+            <div class="ch-v"></div>
+            <div class="ch-h"></div>
+        </div>
+        <div class="target-coords" id="randCoords">SYS.COORD // 45.92 - 12.04</div>
+    </div>
+
+    <!-- Top Navigation & Status -->
+    <header class="hud-header">
+        <div class="h-left">
+            <div class="logo-box">
+                <span class="logo">J.A.R.V.I.S.</span>
+                <span class="version">MK V</span>
+            </div>
+            <div class="status-indicator">
+                <div class="dot pulse"></div>
+                <div class="status-text">
+                    <span id="aiStatus">CORE ONLINE</span>
+                    <span class="sub-status">AWAITING DIRECTIVES</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="h-center">
+            <canvas id="voiceWave" width="500" height="40"></canvas>
+            <div class="wave-labels">
+                <span>0 Hz</span>
+                <span>AUDIO SPECTROMETER</span>
+                <span>20 kHz</span>
+            </div>
+        </div>
+        
+        <div class="h-right">
+            <div class="time-block">
+                <div class="time" id="sysTime">00:00:00</div>
+                <div class="date" id="sysDate">SYS.DATE</div>
+            </div>
+            <div class="geo-data">
+                <div class="geo-row">LAT: <span id="geoLat">34.0522 N</span></div>
+                <div class="geo-row">LON: <span id="geoLon">118.2437 W</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Wrap-around Dashboard (3D Cockpit) -->
+    <main class="dashboard">
+        
+        <!-- LEFT WING: Hardware & Telemetry -->
+        <aside class="panel left-panel">
+            <div class="panel-header">
+                <div class="ph-title">HARDWARE TELEMETRY</div>
+                <div class="ph-line"></div>
+                <div class="ph-hex">0x1A</div>
+            </div>
+            
+            <!-- Ultra Realistic Gauges with Scales -->
+            <div class="gauge-deck">
+                <div class="gauge-wrapper">
+                    <canvas id="gaugeCpu" width="160" height="160"></canvas>
+                    <div class="gauge-overlay">
+                        <span id="cpuVal" class="val">0</span>
+                        <span class="unit">% CPU</span>
+                    </div>
+                </div>
+                <div class="gauge-wrapper">
+                    <canvas id="gaugeMem" width="160" height="160"></canvas>
+                    <div class="gauge-overlay">
+                        <span id="memVal" class="val">0</span>
+                        <span class="unit">% RAM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-box mt-4">
+                <div class="db-header">
+                    <span class="db-title">MEMORY ALLOCATION MATRIX</span>
+                    <span class="db-badge">32GB M5</span>
+                </div>
+                <div class="scale-ticks">
+                    <span>0</span><span>8</span><span>16</span><span>24</span><span>32 GB</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="fill" id="ramBar" style="width: 0%">
+                        <div class="fill-glow"></div>
+                    </div>
+                </div>
+                <div class="db-row mt-2">
+                    <span class="label">ACTIVE PROCESSES</span>
+                    <span id="ramUsed" class="value highlight">-- GB</span>
+                </div>
+            </div>
+
+            <div class="data-box mt-3">
+                <div class="db-header">
+                    <span class="db-title">LOGICAL STORAGE VOLUME</span>
+                    <span class="db-badge">APFS</span>
+                </div>
+                <div class="scale-ticks">
+                    <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="fill" id="diskBar" style="width: 0%; background: linear-gradient(90deg, #ff7b00, #ffb700);">
+                        <div class="fill-glow"></div>
+                    </div>
+                </div>
+                <div class="db-row mt-2">
+                    <span class="label">CAPACITY USED</span>
+                    <span id="diskUsed" class="value highlight">-- / -- GB</span>
+                </div>
+            </div>
+
+            <div class="panel-header mt-4">
+                <div class="ph-title">NETWORK TRAFFIC</div>
+                <div class="ph-line"></div>
+            </div>
+            <div class="net-grid">
+                <div class="net-cell">
+                    <div class="nc-label">UPLINK [TX]</div>
+                    <div class="nc-val up" id="netUp">-- MB</div>
+                    <canvas id="netUpChart" class="mini-chart"></canvas>
+                </div>
+                <div class="net-cell">
+                    <div class="nc-label">DOWNLINK [RX]</div>
+                    <div class="nc-val down" id="netDown">-- MB</div>
+                    <canvas id="netDownChart" class="mini-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container mt-4">
+                <div class="db-header">
+                    <span class="db-title">CPU THERMAL / LOAD HISTORY</span>
+                    <span class="db-badge live">LIVE</span>
+                </div>
+                <canvas id="cpuChart" width="300" height="100"></canvas>
+            </div>
+        </aside>
+
+        <!-- CENTER WING: AI Comms -->
+        <section class="center-panel">
+            <div class="chat-viewport">
+                <div class="glass-overlay"></div>
+                <div class="chat-messages" id="chatList">
+                    <!-- Messages injected here -->
+                </div>
+            </div>
+            
+            <div class="command-deck">
+                <div class="cmd-brackets left"></div>
+                <button class="mic-btn" id="micBtn">
+                    <div class="mic-core"></div>
+                    <div class="mic-rings"></div>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="AWAITING PROTOCOL OVERRIDE..." autocomplete="off">
+                    <div class="input-scanline"></div>
+                </div>
+                <button class="send-btn" id="sendBtn">
+                    EXECUTE
+                </button>
+                <div class="cmd-brackets right"></div>
+            </div>
+        </section>
+
+        <!-- RIGHT WING: Execution & Modules -->
+        <aside class="panel right-panel">
+            <div class="panel-header">
+                <div class="ph-title">TACTICAL CONTROLS</div>
+                <div class="ph-line"></div>
+                <div class="ph-hex">0x2B</div>
+            </div>
+            
+            <div class="tactical-grid">
+                <button class="tac-btn" data-action="media_control" data-param="play">
+                    <span class="t-icon">▶</span>
+                    <span class="t-text">PLAY MEDIA</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn" data-action="media_control" data-param="pause">
+                    <span class="t-icon">⏸</span>
+                    <span class="t-text">PAUSE MEDIA</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn" data-action="media_control" data-param="next track">
+                    <span class="t-icon">⏭</span>
+                    <span class="t-text">NEXT TRACK</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn warn" data-action="lock_screen">
+                    <span class="t-icon">🔒</span>
+                    <span class="t-text">LOCK SYSTEM</span>
+                    <div class="t-dec"></div>
+                </button>
+                
+                <button class="tac-btn sub" data-action="open_app" data-param="safari">INIT BROWSER</button>
+                <button class="tac-btn sub" data-action="open_app" data-param="terminal">INIT TERMINAL</button>
+                <button class="tac-btn sub" data-action="open_app" data-param="whatsapp">WHATSAPP LINK</button>
+                <button class="tac-btn sub" data-action="screenshot">SCREEN CAPTURE</button>
+            </div>
+
+            <div class="data-box mt-4">
+                <div class="db-header">
+                    <span class="db-title">AUDIO AMPLIFICATION</span>
+                </div>
+                <div class="audio-slider-box">
+                    <span class="vol-label">0%</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="50" class="hud-slider">
+                    <span class="vol-label">100%</span>
+                </div>
+            </div>
+
+            <div class="panel-header mt-4">
+                <div class="ph-title">PROCESS THREADS</div>
+                <div class="ph-line"></div>
+            </div>
+            
+            <div class="process-matrix" id="procList">
+                <div class="proc-head">
+                    <span class="p-name">EXECUTABLE</span>
+                    <span class="p-pid">PID</span>
+                    <span class="p-cpu">LOAD</span>
+                </div>
+                <!-- Dynamic processes injected here -->
+            </div>
+            
+            <!-- Decorative Hex Stream -->
+            <div class="hex-stream" id="hexStream">
+                <!-- Random hex injected here -->
+            </div>
+        </aside>
+    </main>
+
+    <div class="toast-hub" id="toastHub"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

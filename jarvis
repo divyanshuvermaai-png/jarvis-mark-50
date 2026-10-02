@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# J.A.R.V.I.S. Production Executable Wrapper
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$DIR/.venv/bin/python" "$DIR/launcher.py" "$@"

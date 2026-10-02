@@ -1,0 +1,61 @@
+{
+  "name": "jarvis-core",
+  "productName": "JARVIS",
+  "version": "5.0.0",
+  "description": "J.A.R.V.I.S. Artificial Intelligence System",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "Divyanshu",
+  "license": "MIT",
+  "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/hands": "^0.4.1675469240",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.divyanshu.jarvis",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg",
+      "icon": "icon.icns",
+      "artifactName": "jarvis.dmg",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "JARVIS needs microphone access to hear your voice commands.",
+        "NSCameraUsageDescription": "JARVIS needs camera access for holographic mid-air gesture tracking and Air Mouse."
+      }
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "script.js",
+      "startup/dist/**/*",
+      "start up sound/**/*",
+      "dist/jarvis_core/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/jarvis_core",
+        "to": "jarvis_core",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "startup/dist",
+        "to": "startup",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  }
+}

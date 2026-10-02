@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>J.A.R.V.I.S. MK V - TACTICAL HUD</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="hud-bg"></div>
+    <div class="hud-grid"></div>
+    <canvas id="bgCanvas"></canvas>
+    <div class="vignette"></div>
+
+    <!-- 3D HOLOGRAPHIC MATRIX SELECTOR -->
+    <div class="holo-mode-deck" id="holoModeDeck">
+        <button class="holo-mode-btn active" data-mode="reactor">ARC CORE</button>
+        <button class="holo-mode-btn" data-mode="suit">MARK 85 SUIT</button>
+        <button class="holo-mode-btn" data-mode="gauntlet">GAUNTLET</button>
+    </div>
+
+    <div class="center-hologram" id="centerHoloContainer">
+        <!-- Cinema-Grade 3D Holographic Arc Reactor mounted by holo_reactor.js -->
+        <canvas id="circularWave" width="560" height="560" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2;"></canvas>
+    </div>
+
+    <!-- HEADER -->
+    <header class="hud-header">
+        <div class="h-left">
+            <div class="sys-badge">OS: DARWIN_ARM64</div>
+            <div class="sys-badge" style="border-color: rgba(0,229,255,0.6); color: #00e5ff;">CORP: DIVYANSHU INDUSTRIES</div>
+            <div class="sys-badge" style="border-color: rgba(0,255,136,0.6); color: #00ff88;">USER: DIVYANSHU VERMA</div>
+            <div class="sys-badge warn" id="statusBadge">AI: OFFLINE</div>
+            <div class="sys-coords" id="randCoords">SYS.COORD // 34.0522 - 118.2437</div>
+        </div>
+        
+        <div class="h-center">
+            <div class="main-title">J.A.R.V.I.S. <span style="color:#fff;">MK V</span></div>
+            <div class="subtitle">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+            <canvas id="voiceWave" width="340" height="24" class="voice-wave-canvas"></canvas>
+        </div>
+        
+        <div class="h-right">
+            <button id="wakeWordBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 10px; border-color: rgba(0, 229, 255, 0.4); display: flex; align-items: center; gap: 6px;" title="Toggle Always-Listening 'Hey Jarvis' Wake Word">
+                <span class="status-dot" id="wakeWordDot" style="width: 7px; height: 7px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88;"></span>
+                <span id="wakeWordText">WAKE WORD: ON</span>
+            </button>
+            <button id="gestureBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 10px; border-color: rgba(0, 229, 255, 0.4); display: flex; align-items: center; gap: 6px;" title="Toggle Hand Gesture Sensor">
+                <span class="status-dot" id="gestureDot" style="width: 7px; height: 7px; border-radius: 50%; background: #555;"></span>
+                <span id="gestureBtnText">GESTURES: OFF</span>
+            </button>
+            <button id="screenWatchBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 10px; border-color: rgba(0, 255, 136, 0.4); display: flex; align-items: center; gap: 6px;" title="Continuous Real-Time Screen Perception">
+                <span class="status-dot" id="screenWatchDot" style="width: 7px; height: 7px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88;"></span>
+                <span id="screenWatchBtnText">SCREEN: ON</span>
+            </button>
+            <button id="screenShareBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 10px; border-color: rgba(0, 229, 255, 0.6); color: #00e5ff; display: flex; align-items: center; gap: 6px;" title="Share Screen with J.A.R.V.I.S. (Live Optical Stream)">
+                <span class="status-dot" id="screenShareDot" style="width: 7px; height: 7px; border-radius: 50%; background: #555;"></span>
+                <span id="screenShareBtnText">SHARE SCREEN</span>
+            </button>
+            <button id="hudHealthBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 8px; border-color: rgba(0, 255, 170, 0.5); display: flex; align-items: center; gap: 6px;" title="System Health Audit">
+                <span>🩺</span>
+                <span>HEALTH</span>
+            </button>
+            <button id="hudTestBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 8px; border-color: rgba(0, 229, 255, 0.5); display: flex; align-items: center; gap: 6px;" title="Execute Unit Test Suite">
+                <span>🧪</span>
+                <span>TEST</span>
+            </button>
+            <button id="hudCliBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 8px; border-color: rgba(255, 170, 0, 0.5); display: flex; align-items: center; gap: 6px;" title="Open CLI Terminal Console">
+                <span>💻</span>
+                <span>CLI</span>
+            </button>
+            <button id="hudCommsBtn" class="tac-btn" style="padding: 4px 10px; font-size: 11px; margin-right: 12px; border-color: rgba(37, 211, 102, 0.6); color: #25d366; display: flex; align-items: center; gap: 6px;" title="Tactical WhatsApp Comms Link">
+                <span>💬</span>
+                <span>COMMS</span>
+            </button>
+            <button id="openSettingsBtn" class="mic-btn" style="margin-right: 15px; border-radius: 4px; font-size: 16px;">⚙</button>
+            <div class="time-block">
+                <div class="time" id="sysTime">00:00:00</div>
+                <div class="date" id="sysDate">SYS.DATE</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- LEFT WING: Diagnostics -->
+        <aside class="panel left-panel">
+            <div class="corner-bracket tl"></div>
+            <div class="corner-bracket tr"></div>
+            <div class="corner-bracket bl"></div>
+            <div class="corner-bracket br"></div>
+            <div class="panel-header">
+                <div class="ph-title">CORE DIAGNOSTICS</div>
+                <div class="ph-line"></div>
+                <div class="ph-hex">0x8F</div>
+            </div>
+            
+            <div class="gauge-deck">
+                <div class="gauge-wrapper">
+                    <canvas id="gaugeCpu" width="180" height="180"></canvas>
+                    <div class="gauge-overlay">
+                        <span id="cpuVal" class="val">0</span>
+                        <span class="unit">% CPU</span>
+                    </div>
+                </div>
+                <div class="gauge-wrapper">
+                    <canvas id="gaugeMem" width="180" height="180"></canvas>
+                    <div class="gauge-overlay">
+                        <span id="memVal" class="val">0</span>
+                        <span class="unit">% RAM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-box mt-4">
+                <div class="holo-scanlines"></div>
+                <div class="holo-shimmer"></div>
+                <div class="db-header">
+                    <span class="db-title">MEMORY ALLOCATION MATRIX</span>
+                    <span class="db-badge">32GB M5</span>
+                </div>
+                <div class="scale-ticks">
+                    <span>0</span><span>8</span><span>16</span><span>24</span><span>32 GB</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="fill" id="ramBar" style="width: 0%">
+                        <div class="fill-glow"></div>
+                    </div>
+                </div>
+                <div class="db-row mt-2">
+                    <span class="label">ACTIVE PROCESSES</span>
+                    <span id="ramUsed" class="value highlight">-- GB</span>
+                </div>
+            </div>
+
+            <div class="data-box mt-3">
+                <div class="holo-scanlines"></div>
+                <div class="holo-shimmer"></div>
+                <div class="db-header">
+                    <span class="db-title">LOGICAL STORAGE VOLUME</span>
+                    <span class="db-badge">APFS</span>
+                </div>
+                <div class="scale-ticks">
+                    <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="fill" id="diskBar" style="width: 0%; background: linear-gradient(90deg, #ff7b00, #ffb700);">
+                        <div class="fill-glow"></div>
+                    </div>
+                </div>
+                <div class="db-row mt-2">
+                    <span class="label">CAPACITY USED</span>
+                    <span id="diskUsed" class="value highlight">-- / -- GB</span>
+                </div>
+            </div>
+
+            <div class="panel-header mt-4">
+                <div class="ph-title">NETWORK TRAFFIC</div>
+                <div class="ph-line"></div>
+            </div>
+            <div class="net-grid">
+                <div class="net-cell">
+                    <div class="nc-label">UPLINK [TX]</div>
+                    <div class="nc-val up" id="netUp">-- MB</div>
+                    <canvas id="netUpChart" class="mini-chart"></canvas>
+                </div>
+                <div class="net-cell">
+                    <div class="nc-label">DOWNLINK [RX]</div>
+                    <div class="nc-val down" id="netDown">-- MB</div>
+                    <canvas id="netDownChart" class="mini-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container mt-4">
+                <div class="db-header">
+                    <span class="db-title">CPU THERMAL / LOAD HISTORY</span>
+                    <span class="db-badge live">LIVE</span>
+                </div>
+                <canvas id="cpuChart" width="300" height="100"></canvas>
+            </div>
+
+            <!-- Marvel Studios Tactical Radar & Voltage Rails -->
+            <div class="data-box mt-4">
+                <div class="db-header">
+                    <span class="db-title">TACTICAL SCAN // RADAR</span>
+                    <span class="db-badge live">TRACKING</span>
+                </div>
+                <div style="display:flex; justify-content:center; padding: 10px 0;">
+                    <canvas id="polarRadar" width="160" height="160" style="filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));"></canvas>
+                </div>
+                <div class="telemetry-rails">
+                    <div class="t-rail"><span>FLUX:</span><b id="tFlux">4.82 T</b></div>
+                    <div class="t-rail"><span>HEAT:</span><b id="tHeat">312.4 K</b></div>
+                    <div class="t-rail"><span>GRID:</span><b id="tGrid">3.24 GW</b></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER WING: AI Comms -->
+        <section class="center-panel">
+            <div class="chat-viewport">
+                <div class="glass-overlay"></div>
+                <div class="chat-messages" id="chatList">
+                    <!-- Messages injected here -->
+                </div>
+            </div>
+            
+            <div class="command-deck">
+                <div class="cmd-brackets left"></div>
+                <button class="mic-btn" id="micBtn">
+                    <div class="mic-core"></div>
+                    <div class="mic-rings"></div>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="AWAITING PROTOCOL OVERRIDE..." autocomplete="off">
+                    <div class="input-scanline"></div>
+                </div>
+                <button class="send-btn" id="sendBtn">
+                    EXECUTE
+                </button>
+                <div class="cmd-brackets right"></div>
+            </div>
+        </section>
+
+        <!-- RIGHT WING: Execution & Modules -->
+        <aside class="panel right-panel">
+            <div class="corner-bracket tl"></div>
+            <div class="corner-bracket tr"></div>
+            <div class="corner-bracket bl"></div>
+            <div class="corner-bracket br"></div>
+            <div class="panel-header">
+                <div class="ph-title">TACTICAL CONTROLS</div>
+                <div class="ph-line"></div>
+                <div class="ph-hex">0x2B</div>
+            </div>
+            
+            <div class="tactical-grid">
+                <button class="tac-btn" data-action="media_control" data-param="play">
+                    <span class="t-icon">▶</span>
+                    <span class="t-text">PLAY MEDIA</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn" data-action="media_control" data-param="pause">
+                    <span class="t-icon">⏸</span>
+                    <span class="t-text">PAUSE MEDIA</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn" data-action="media_control" data-param="next track">
+                    <span class="t-icon">⏭</span>
+                    <span class="t-text">NEXT TRACK</span>
+                    <div class="t-dec"></div>
+                </button>
+                <button class="tac-btn warn" data-action="lock_screen">
+                    <span class="t-icon">🔒</span>
+                    <span class="t-text">LOCK SYSTEM</span>
+                    <div class="t-dec"></div>
+                </button>
+                
+                <button class="tac-btn sub" data-action="briefing" style="border-color: rgba(0, 255, 136, 0.5);"><span class="chv" style="color: #00ff88;">&gt;&gt;&gt;</span> MORNING BRIEF</button>
+                <button class="tac-btn sub" data-action="analyze_screen" style="border-color: rgba(0, 229, 255, 0.5);"><span class="chv">&gt;&gt;&gt;</span> COPILOT VISION</button>
+                <button class="tac-btn sub" id="tacAirMouseBtn" style="border-color: rgba(0, 229, 255, 0.7);"><span class="chv" style="color: #00e5ff;">&gt;&gt;&gt;</span> AIR MOUSE [KEY G]</button>
+                <button class="tac-btn sub" data-action="open_app" data-param="safari"><span class="chv">&gt;&gt;&gt;</span> BROWSER MATRIX</button>
+                <button class="tac-btn sub" data-action="open_app" data-param="terminal"><span class="chv">&gt;&gt;&gt;</span> ROOT TERMINAL</button>
+                <button class="tac-btn sub" id="tacCommsBtn" style="border-color: rgba(37, 211, 102, 0.6); color: #25d366;"><span class="chv" style="color: #25d366;">&gt;&gt;&gt;</span> COMMS LINK</button>
+                <button class="tac-btn sub" data-action="screenshot"><span class="chv">&gt;&gt;&gt;</span> OPTICAL SCAN</button>
+                <button class="tac-btn sub" data-action="desktop_snap" data-param="left"><span class="chv">&gt;&gt;&gt;</span> SNAP LEFT</button>
+                <button class="tac-btn sub" data-action="desktop_snap" data-param="right"><span class="chv">&gt;&gt;&gt;</span> SNAP RIGHT</button>
+                <button class="tac-btn sub" id="tacHealthBtn" style="border-color: rgba(0, 255, 170, 0.6);"><span class="chv" style="color: #00ffaa;">&gt;&gt;&gt;</span> HEALTH AUDIT</button>
+                <button class="tac-btn sub" id="tacTestBtn" style="border-color: rgba(0, 229, 255, 0.6);"><span class="chv" style="color: #00e5ff;">&gt;&gt;&gt;</span> RUN SELF-TEST</button>
+                <button class="tac-btn sub" id="tacCliBtn" style="border-color: rgba(255, 170, 0, 0.6);"><span class="chv" style="color: #ffaa00;">&gt;&gt;&gt;</span> CLI CONSOLE</button>
+            </div>
+
+            <div class="data-box mt-4">
+                <div class="db-header">
+                    <span class="db-title">AUDIO AMPLIFICATION</span>
+                </div>
+                <div class="audio-slider-box">
+                    <span class="vol-label">0%</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="50" class="hud-slider">
+                    <span class="vol-label">100%</span>
+                </div>
+            </div>
+
+            <div class="panel-header mt-4">
+                <div class="ph-title">PROCESS THREADS</div>
+                <div class="ph-line"></div>
+            </div>
+            
+            <div class="process-matrix" id="procList">
+                <div class="proc-head">
+                    <span class="p-name">EXECUTABLE</span>
+                    <span class="p-pid">PID</span>
+                    <span class="p-cpu">LOAD</span>
+                </div>
+                <!-- Dynamic processes injected here -->
+            </div>
+            
+            <!-- Decorative Hex Stream -->
+            <div class="hex-stream" id="hexStream">
+                <!-- Random hex injected here -->
+            </div>
+        </aside>
+    </main>
+
+    <div class="toast-hub" id="toastHub"></div>
+
+    <!-- ── ADVANCED SETTINGS MODAL ── -->
+    <div id="settingsModal" class="settings-modal" style="display: none;">
+        <div class="settings-content" style="width: 550px;">
+            <div class="settings-header">
+                <h2 style="font-size: 28px; text-shadow: 0 0 10px var(--theme-primary);">ADVANCED CORE CONFIGURATION</h2>
+                <button id="closeSettingsBtn" class="close-btn">X</button>
+            </div>
+            
+            <div class="settings-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.3); padding-bottom: 10px;">
+                <button class="s-tab active" data-tab="ai_core" style="background:transparent; border:none; color:var(--theme-primary); font-family:'Teko'; font-size:20px; cursor:pointer;">AI CORE</button>
+                <button class="s-tab" data-tab="behavior" style="background:transparent; border:none; color:#888; font-family:'Teko'; font-size:20px; cursor:pointer;">BEHAVIOR OVERRIDE</button>
+                <button class="s-tab" data-tab="audio" style="background:transparent; border:none; color:#888; font-family:'Teko'; font-size:20px; cursor:pointer;">AUDIO / VOICE</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- AI CORE TAB -->
+                <div id="tab_ai_core" class="tab-content active">
+                    <div class="form-group">
+                        <label>AI PROVIDER NODE (4 CLOUD APIS + 1 LOCAL GPU MODEL)</label>
+                        <select id="providerSelect" style="background: rgba(0,10,25,0.8); border: 1px solid #00e5ff; color: #fff; padding: 12px; font-family: monospace;">
+                            <option value="gemini">Google Gemini (Cloud)</option>
+                            <option value="openrouter">OpenRouter (Cloud)</option>
+                            <option value="groq">Groq (Ultra-Fast Cloud)</option>
+                            <option value="nvidia">Nvidia NIM (Cloud)</option>
+                            <option value="gemma">Gemma 4 E2B 4-bit (Local Apple Silicon MLX GPU)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Local Gemma 4 E2B 4-bit Hardware Banner -->
+                    <div id="localAiBanner" style="display:none; margin-top: 12px; padding: 10px 14px; background: rgba(0, 255, 136, 0.08); border: 1px solid #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.15);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-family: 'Teko', sans-serif; font-size: 18px; color: #00ff88; letter-spacing: 1.5px;">LOCAL NEURAL ACCELERATION ACTIVE</span>
+                            <span style="font-family: monospace; font-size: 9px; background: #00ff88; color: #000; padding: 2px 6px; font-weight: bold; border-radius: 2px;">ZERO API KEY REQUIRED</span>
+                        </div>
+                        <div style="font-size: 11px; color: #bbb; margin-top: 5px; font-family: monospace;" id="localAiStatusText">
+                            MODEL: Gemma 4 E2B (4-bit MLX) // ACCELERATION: APPLE SILICON GPU (~88 TPS) // STATUS: READY (3.3 GB CACHED)
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:15px;">
+                        <label>MODEL DESIGNATION</label>
+                        <input type="text" id="modelInput" placeholder="e.g. gemini-3.5-flash">
+                    </div>
+                    <!-- SEPARATE SPACES FOR ALL AI CORES -->
+                    <div class="form-group" id="cloudKeysSection" style="margin-top:15px; background: rgba(0,255,255,0.05); padding: 10px; border: 1px solid rgba(0,229,255,0.2);">
+                        <label style="color:#00e5ff; margin-bottom: 8px;">CORE DECRYPTION KEYS</label>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:12px; color:#888;">GEMINI CORE</span>
+                            <input type="password" id="api_key_gemini" placeholder="AIza..." style="width:70%;">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:12px; color:#888;">OPENROUTER CORE</span>
+                            <input type="password" id="api_key_openrouter" placeholder="sk-or-v1-..." style="width:70%;">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:12px; color:#888;">GROQ CORE</span>
+                            <input type="password" id="api_key_groq" placeholder="gsk_..." style="width:70%;">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#888;">NVIDIA NIM</span>
+                            <input type="password" id="api_key_nvidia" placeholder="nvapi-..." style="width:70%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BEHAVIOR TAB -->
+                <div id="tab_behavior" class="tab-content" style="display:none;">
+                    <div class="form-group">
+                        <label>SYSTEM PROMPT (PERSONA OVERRIDE)</label>
+                        <textarea id="sysPromptInput" rows="4" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 229, 255, 0.3); color: #fff; padding: 12px; font-family: 'Share Tech Mono'; font-size: 13px; outline: none; resize: none;"></textarea>
+                    </div>
+                    <div style="display:flex; gap: 15px; margin-top:15px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>TEMPERATURE (<span id="tempValOut">0.7</span>)</label>
+                            <input type="range" id="tempInput" min="0" max="2" step="0.1" value="0.7">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>MAX TOKENS</label>
+                            <input type="number" id="tokensInput" value="1024" min="100" max="8000">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AUDIO TAB -->
+                <div id="tab_audio" class="tab-content" style="display:none;">
+                    <div class="form-group">
+                        <label>EDGE TTS NEURAL VOICE MODULE</label>
+                        <select id="voiceSelect" style="background: rgba(0,10,25,0.8); border: 1px solid #00e5ff; color: #fff; padding: 12px; font-family: monospace;">
+                            <option value="jarvis" selected>🇬🇧 Paul Bettany J.A.R.V.I.S. (UK Male - Authentic Marvel Cadence)</option>
+                            <option value="thomas_uk">🇬🇧 Thomas Neural (UK Male - Authoritative)</option>
+                            <option value="christopher_us">🇺🇸 Christopher Neural (US Male)</option>
+                            <option value="sonia_uk">🇬🇧 Sonia Neural (UK Female - F.R.I.D.A.Y.)</option>
+                            <option value="indian_male">🇮🇳 Prabhat Neural (Indian Male)</option>
+                            <option value="indian_female">🇮🇳 Neerja Neural (Indian Female)</option>
+                            <option value="australian">🇦🇺 William Neural (AU Male)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top:15px;">
+                        <label style="color: rgba(0,229,255,0.6); font-size: 12px;">⚡ Powered by Microsoft Edge TTS — Neural voices with natural intonation, emotion, and breathing patterns. No API key required.</label>
+                    </div>
+                </div>
+
+                <button id="saveSettingsBtn" class="tac-btn sub mt-4" style="width: 100%;">SAVE & SYNC TO CORE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TACTICAL GESTURE SENSOR PIP (Holographic Vision & Air Mouse) -->
+    <div id="gesturePipContainer" class="tactical-pip" style="display:none; position:fixed; bottom:24px; right:24px; width:224px; height:194px; background:rgba(0,10,25,0.92); border:1px solid rgba(0,229,255,0.45); border-radius:4px; z-index:1000; box-shadow:0 0 25px rgba(0,229,255,0.25); overflow:hidden;">
+        <div class="corner-bracket tl"></div>
+        <div class="corner-bracket tr"></div>
+        <div class="corner-bracket bl"></div>
+        <div class="corner-bracket br"></div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 8px; background:rgba(0,229,255,0.12); border-bottom:1px solid rgba(0,229,255,0.3); font-family:monospace; font-size:10px; color:#00e5ff; letter-spacing:0.5px;">
+            <span>OPTIC SENSOR // AIR MOUSE</span>
+            <span id="gestureFps">30 FPS</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 8px; background:rgba(0,5,15,0.95); border-bottom:1px solid rgba(0,229,255,0.2);">
+            <button id="gestureModeToggle" style="background:rgba(0,229,255,0.2); border:1px solid #00e5ff; color:#00e5ff; font-family:monospace; font-size:9px; font-weight:bold; padding:2px 8px; border-radius:2px; cursor:pointer; letter-spacing:0.5px; transition:all 0.2s;">MODE: AIR MOUSE</button>
+            <span style="font-family:monospace; font-size:8.5px; color:rgba(0,229,255,0.65);">[KEY 'M']</span>
+        </div>
+        
+        <video id="gestureVideo" style="position:fixed; top:-9999px; left:-9999px; width:640px; height:480px; opacity:0; pointer-events:none;" playsinline muted autoplay></video>
+        <canvas id="gestureCanvas" width="224" height="118" style="width:100%; height:118px; display:block;"></canvas>
+        
+        <div style="padding:3px 8px; background:rgba(0,0,0,0.9); font-family:monospace; font-size:9.5px; color:#00ff88; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(0,229,255,0.2);">
+            <span id="gestureStatusText">STATUS: SCANNING...</span>
+            <span id="gestureMetric">0.00</span>
+        </div>
+    </div>
+
+    <!-- ── HUD SYSTEM HEALTH MODAL ── -->
+    <div id="hudHealthModal" class="settings-modal" style="display: none;">
+        <div class="settings-content" style="width: 580px; max-width: 92vw;">
+            <div class="settings-header">
+                <h2 style="font-size: 26px; text-shadow: 0 0 10px #00ffaa; color: #00ffaa;">🩺 SYSTEM HEALTH AUDIT</h2>
+                <button id="closeHudHealthBtn" class="close-btn">X</button>
+            </div>
+            <div id="hudHealthBody" style="font-family: 'Share Tech Mono', monospace; font-size: 13px; max-height: 420px; overflow-y: auto; line-height: 1.8; color: #e6f4fb;">
+                <div style="text-align: center; color: var(--theme-primary); padding: 20px;">Inspecting system subsystems...</div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; border-top: 1px solid rgba(0, 229, 255, 0.2); padding-top: 12px;">
+                <button id="refreshHudHealthBtn" class="tac-btn sub" style="border-color: #00ffaa; color: #00ffaa;">🔄 REFRESH</button>
+                <button id="dismissHudHealthBtn" class="tac-btn sub">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── HUD SYSTEM SELF-TEST MODAL ── -->
+    <div id="hudTestModal" class="settings-modal" style="display: none;">
+        <div class="settings-content" style="width: 580px; max-width: 92vw;">
+            <div class="settings-header">
+                <h2 style="font-size: 26px; text-shadow: 0 0 10px var(--theme-primary); color: var(--theme-primary);">🧪 SYSTEM SELF-TEST RUNNER</h2>
+                <button id="closeHudTestBtn" class="close-btn">X</button>
+            </div>
+            <div id="hudTestBody" style="font-family: 'Share Tech Mono', monospace; font-size: 13px; max-height: 420px; overflow-y: auto; line-height: 1.8; color: #e6f4fb;">
+                <div style="text-align: center; color: var(--theme-primary); padding: 20px;">Ready to execute test suite. Click 'EXECUTE TESTS' below.</div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; border-top: 1px solid rgba(0, 229, 255, 0.2); padding-top: 12px;">
+                <button id="runHudTestBtn" class="tac-btn sub" style="border-color: var(--theme-primary); color: var(--theme-primary);">⚡ EXECUTE TESTS</button>
+                <button id="dismissHudTestBtn" class="tac-btn sub">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── HUD CLI TERMINAL DRAWER ── -->
+    <div id="hudCliModal" class="settings-modal" style="display: none;">
+        <div class="settings-content" style="width: 720px; max-width: 95vw;">
+            <div class="settings-header">
+                <h2 style="font-size: 26px; text-shadow: 0 0 10px #ffaa00; color: #ffaa00;">💻 TACTICAL CLI CONSOLE</h2>
+                <button id="closeHudCliBtn" class="close-btn">X</button>
+            </div>
+            <div id="hudCliTerminal" style="font-family: 'Share Tech Mono', monospace; font-size: 12.5px; height: 320px; overflow-y: auto; background: rgba(0, 5, 12, 0.95); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; padding: 12px; line-height: 1.6; color: #00ffcc; white-space: pre-wrap; margin-bottom: 12px;">J.A.R.V.I.S. Unified Tactical Console v5.0.0
+Type 'help' for command matrix. Desktop automation and system diagnostics enabled.
+</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span style="font-family: monospace; color: #ffaa00; font-weight: bold;">&gt;</span>
+                <input type="text" id="hudCliInput" placeholder="Enter CLI command (help, status, health, test, clear)..." style="flex: 1; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 229, 255, 0.3); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; outline: none; border-radius: 4px;" autocomplete="off" />
+                <button id="hudCliExecBtn" class="tac-btn sub" style="border-color: #ffaa00; color: #ffaa00; padding: 9px 18px;">RUN</button>
+                <button id="hudCliClearBtn" class="tac-btn sub" style="padding: 9px 12px;">CLEAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── HUD WHATSAPP TACTICAL COMMS MODAL ── -->
+    <div id="hudWaModal" class="settings-modal" style="display: none;">
+        <div class="settings-content" style="width: 660px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+            <div class="settings-header">
+                <h2 style="font-size: 22px; text-shadow: 0 0 10px #25d366; color: #25d366; display: flex; align-items: center; gap: 8px;">
+                    <span>💬 TACTICAL COMMS LINK // WHATSAPP AGENT</span>
+                    <span id="waMockBadge" style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: rgba(0,229,255,0.2); border: 1px solid #00e5ff; color: #00e5ff; letter-spacing: 1px;">LOCAL AGENT</span>
+                </h2>
+                <button id="closeHudWaBtn" class="close-btn">X</button>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div style="display: flex; gap: 8px; margin-top: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(37, 211, 102, 0.3); padding-bottom: 8px;">
+                <button type="button" id="waTabTransmitBtn" class="wa-tab-btn active" style="background: rgba(37, 211, 102, 0.2); border: 1px solid #25d366; color: #25d366; padding: 6px 14px; font-family: 'Share Tech Mono', monospace; font-size: 11px; border-radius: 3px; cursor: pointer;">TRANSMIT</button>
+                <button type="button" id="waTabIntelBtn" class="wa-tab-btn" style="background: transparent; border: 1px solid rgba(0, 229, 255, 0.4); color: #00e5ff; padding: 6px 14px; font-family: 'Share Tech Mono', monospace; font-size: 11px; border-radius: 3px; cursor: pointer;">INTELLIGENCE & ACTIVITY</button>
+                <button type="button" id="waTabSecurityBtn" class="wa-tab-btn" style="background: transparent; border: 1px solid rgba(255, 170, 0, 0.4); color: #ffaa00; padding: 6px 14px; font-family: 'Share Tech Mono', monospace; font-size: 11px; border-radius: 3px; cursor: pointer;">GOVERNANCE & PERMISSIONS</button>
+            </div>
+
+            <!-- PANE 1: TRANSMIT -->
+            <div id="waPaneTransmit" style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #25d366; letter-spacing: 1px; display: block; margin-bottom: 4px;">TARGET RECIPIENT (CONTACT NAME OR PHONE NUMBER)</label>
+                    <input type="text" id="waRecipient" placeholder="e.g. Subham, Alex, or +919876543210" style="width: 100%; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(37, 211, 102, 0.4); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 13px; border-radius: 4px; box-sizing: border-box;" autocomplete="off" />
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #25d366; letter-spacing: 1px;">MESSAGE TRANSMISSION</label>
+                        <div id="waEmojiBar" style="display: flex; gap: 6px;">
+                            <button type="button" class="wa-chip" data-emoji="🚀">🚀</button>
+                            <button type="button" class="wa-chip" data-emoji="👍">👍</button>
+                            <button type="button" class="wa-chip" data-emoji="💬">💬</button>
+                            <button type="button" class="wa-chip" data-emoji="❤️">❤️</button>
+                            <button type="button" class="wa-chip" data-emoji="⚡">⚡</button>
+                            <button type="button" class="wa-chip" data-emoji="🤝">🤝</button>
+                        </div>
+                    </div>
+                    <textarea id="waMessage" rows="3" placeholder="Enter message text (supports emojis and line breaks)..." style="width: 100%; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(37, 211, 102, 0.4); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 13px; border-radius: 4px; resize: vertical; box-sizing: border-box;"></textarea>
+                </div>
+
+                <div>
+                    <label style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #00e5ff; letter-spacing: 1px; display: block; margin-bottom: 4px;">MEDIA ATTACHMENT (OPTIONAL FILE PATH)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="waMediaPath" placeholder="e.g. /Users/.../photo.png or /tmp/report.pdf" style="flex: 1; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 229, 255, 0.4); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; border-radius: 4px; box-sizing: border-box;" autocomplete="off" />
+                        <input type="text" id="waMediaCaption" placeholder="Caption (optional)" style="flex: 0.8; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 229, 255, 0.4); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; border-radius: 4px; box-sizing: border-box;" autocomplete="off" />
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+                    <button id="waSendMsgBtn" class="tac-btn sub" style="flex: 1; min-width: 120px; border-color: #25d366; color: #25d366; font-weight: bold;">📤 SEND MESSAGE</button>
+                    <button id="waSendMediaBtn" class="tac-btn sub" style="flex: 1; min-width: 120px; border-color: #00e5ff; color: #00e5ff; font-weight: bold;">📎 SEND MEDIA</button>
+                    <button id="waVoiceCallBtn" class="tac-btn sub" style="flex: 0.7; min-width: 100px; border-color: #ffaa00; color: #ffaa00;">📞 CALL</button>
+                    <button id="waVideoCallBtn" class="tac-btn sub" style="flex: 0.7; min-width: 100px; border-color: #ff0055; color: #ff0055;">📹 VIDEO</button>
+                    <button id="waReadBtn" class="tac-btn sub" style="flex: 0.7; min-width: 100px; border-color: #aa00ff; color: #aa00ff;">📥 READ</button>
+                </div>
+
+                <div id="waStatusOutput" style="font-family: 'Share Tech Mono', monospace; font-size: 12px; min-height: 44px; max-height: 100px; overflow-y: auto; background: rgba(0, 5, 12, 0.85); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 4px; padding: 8px 12px; line-height: 1.5; color: #25d366;">
+                    COMMS LINK STANDBY. Select recipient and transmit action.
+                </div>
+            </div>
+
+            <!-- PANE 2: INTELLIGENCE & ACTIVITY -->
+            <div id="waPaneIntel" style="display: none; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button type="button" id="waIntelSummarizeBtn" class="tac-btn sub" style="flex: 1; min-width: 130px; border-color: #00e5ff; color: #00e5ff;">📊 SUMMARIZE ACTIVITY</button>
+                    <button type="button" id="waIntelSendersBtn" class="tac-btn sub" style="flex: 1; min-width: 130px; border-color: #25d366; color: #25d366;">👥 WHO MESSAGED ME</button>
+                    <button type="button" id="waIntelNeedsReplyBtn" class="tac-btn sub" style="flex: 1; min-width: 130px; border-color: #ffaa00; color: #ffaa00;">❓ WHO NEEDS REPLY</button>
+                    <button type="button" id="waIntelDeltaBtn" class="tac-btn sub" style="flex: 1; min-width: 130px; border-color: #ff0055; color: #ff0055;">⚡ WHAT'S NEW</button>
+                </div>
+                <div id="waIntelOutput" style="font-family: 'Share Tech Mono', monospace; font-size: 12px; min-height: 160px; max-height: 280px; overflow-y: auto; background: rgba(0, 5, 12, 0.9); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; padding: 12px; line-height: 1.6; color: #e0f7fa; white-space: pre-wrap;">
+Click an intelligence query above to analyze live WhatsApp communications.
+                </div>
+            </div>
+
+            <!-- PANE 3: GOVERNANCE & PERMISSIONS -->
+            <div id="waPaneSecurity" style="display: none; flex-direction: column; gap: 14px;">
+                <div style="padding: 10px 14px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: #00e5ff; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #fff;">PRIVACY ARCHITECTURE:</strong> STRICT LOCAL FIRST
+                        <div style="font-size: 10px; color: rgba(0,229,255,0.7); margin-top: 2px;">Zero private message bodies uploaded to cloud • Extractive Apple Silicon processing</div>
+                    </div>
+                    <span style="background: rgba(37,211,102,0.2); border: 1px solid #25d366; color: #25d366; padding: 2px 8px; border-radius: 3px; font-size: 10px;">SECURE</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 4px;">
+                    <div>
+                        <span style="font-family: 'Share Tech Mono', monospace; font-size: 12px; color: #ffaa00; font-weight: bold;">MOCK SIMULATION ENGINE</span>
+                        <div style="font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #888;">Simulates contacts and messages safely without launching desktop app</div>
+                    </div>
+                    <button type="button" id="waMockToggleBtn" class="tac-btn sub" style="border-color: #ffaa00; color: #ffaa00; font-size: 11px; padding: 4px 12px;">SIMULATION: OFF</button>
+                </div>
+
+                <div>
+                    <label style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #25d366; letter-spacing: 1px; display: block; margin-bottom: 6px;">CAPABILITY AUTHORIZATIONS</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 12px;">
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="waPermRead" checked style="accent-color: #25d366;" /> Read Messages
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="waPermSend" checked style="accent-color: #25d366;" /> Send Messages
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="waPermCall" checked style="accent-color: #25d366;" /> Voice Calls
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="waPermVideo" checked style="accent-color: #25d366;" /> Video Calls
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="waPermSummarize" checked style="accent-color: #25d366;" /> Summarization
+                        </label>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <button type="button" id="waSavePermsBtn" class="tac-btn sub" style="border-color: #25d366; color: #25d366; font-size: 11px; padding: 4px 14px;">SAVE PERMISSIONS</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #00e5ff; letter-spacing: 1px;">DIAGNOSTICS & SYSTEM AUDIT</label>
+                        <button type="button" id="waRunHealthBtn" class="tac-btn sub" style="border-color: #00e5ff; color: #00e5ff; font-size: 10px; padding: 2px 10px;">🩺 RUN AUDIT</button>
+                    </div>
+                    <div id="waHealthOutput" style="font-family: 'Share Tech Mono', monospace; font-size: 11px; min-height: 60px; max-height: 120px; overflow-y: auto; background: rgba(0, 5, 12, 0.85); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; padding: 8px 12px; line-height: 1.5; color: #00e5ff; white-space: pre-wrap;">
+Diagnostics standby. Click Run Audit to inspect desktop accessibility and IPC responsiveness.
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px; border-top: 1px solid rgba(0, 229, 255, 0.2); padding-top: 10px;">
+                <button id="dismissHudWaBtn" class="tac-btn sub">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TACTICAL SCREEN SHARE MONITOR DOCK -->
+    <div class="screen-share-dock hidden" id="screenShareDeck">
+        <div class="screen-share-header">
+            <div class="ssh-title">
+                <span class="rec-dot"></span>
+                <span>OPTICAL PERCEPTION FEED // SCREEN SHARE</span>
+            </div>
+            <div class="ssh-controls">
+                <button type="button" id="screenAnalyzeBtn" class="tac-btn sub" style="font-size: 10px; padding: 2px 8px; border-color: #00e5ff; color: #00e5ff;" title="Analyze What I'm Doing">👁️ ANALYZE</button>
+                <button type="button" id="screenShareCloseBtn" class="tac-btn sub" style="font-size: 10px; padding: 2px 8px; border-color: #ff0055; color: #ff0055;">✕ STOP</button>
+            </div>
+        </div>
+        <div class="screen-share-body">
+            <video id="screenShareVideo" autoplay playsinline muted></video>
+            <canvas id="screenShareCanvas" style="display: none;"></canvas>
+            <div class="screen-overlay-grid"></div>
+            <div class="screen-crosshair"></div>
+            <div class="screen-feed-info">
+                <span id="screenFpsBadge">1080P @ 30FPS</span>
+                <span id="screenStatusBadge" style="color: #00ff88;">AI LINKED</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MediaPipe Hand Tracking for Mid-Air Gestures -->
+    <script src="vendor/mediapipe/hands.js"></script>
+    <script src="gesture_controller.js"></script>
+    <script src="visor_hud.js"></script>
+    <script type="module" src="holo_reactor.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

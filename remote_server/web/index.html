@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>J.A.R.V.I.S. • Remote AI Knowledge Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #03060f;
+      --panel: rgba(7, 14, 28, 0.88);
+      --panel-border: rgba(0, 229, 255, 0.25);
+      --border-accent: rgba(0, 255, 170, 0.35);
+      --cyan: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.45);
+      --blue: #0066ff;
+      --text: #e6f4fb;
+      --text-dim: #7995a8;
+      --green: #00ffaa;
+      --amber: #ffaa00;
+      --red: #ff3366;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 150, 255, 0.12), transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(0, 229, 255, 0.08), transparent 50%),
+        linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Passcode Gateway Lock Screen Overlay - Hidden for Open Q&A Mode */
+    .auth-overlay {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    .auth-card {
+      background: rgba(6, 14, 28, 0.92);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 0 50px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
+      border-radius: 16px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      top: -1px; left: 20%; right: 20%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .auth-reactor {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 28px var(--cyan-glow);
+      background: radial-gradient(circle, #ffffff 15%, #00e5ff 60%, #0033aa 100%);
+      animation: auth-reactor-spin 8s linear infinite, auth-pulse 3s infinite ease-in-out;
+      margin-bottom: 22px;
+    }
+
+    @keyframes auth-reactor-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes auth-pulse {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 24px var(--cyan-glow); }
+      50% { filter: brightness(1.3); box-shadow: 0 0 40px rgba(0, 229, 255, 0.8); }
+    }
+
+    .auth-title {
+      font-family: Orbitron, monospace;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      text-shadow: 0 0 14px var(--cyan-glow);
+      margin-bottom: 6px;
+    }
+
+    .auth-sub {
+      font-family: Share Tech Mono, monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+
+    .auth-input-group {
+      width: 100%;
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #ffffff;
+      font-family: Share Tech Mono, monospace;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-align: center;
+      outline: none;
+      transition: all 0.25s;
+    }
+
+    .auth-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+
+    .auth-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--cyan), #0066ff);
+      color: #03060f;
+      font-family: Orbitron, monospace;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 2px;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(0, 150, 255, 0.25);
+    }
+
+    .auth-btn:hover {
+      box-shadow: 0 0 24px var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    .auth-error {
+      color: var(--red);
+      font-family: Share Tech Mono, monospace;
+      font-size: 12px;
+      margin-top: 14px;
+      min-height: 16px;
+      letter-spacing: 1px;
+    }
+
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* Top Header */
+    header {
+      padding: 10px 20px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .arc-reactor {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-glow);
+      background: radial-gradient(circle, #ffffff 10%, #00e5ff 60%, #0044aa 100%);
+      animation: reactor-pulse 3s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+
+    @keyframes reactor-pulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); box-shadow: 0 0 14px var(--cyan-glow); }
+      50% { transform: scale(1.06); filter: brightness(1.25); box-shadow: 0 0 22px rgba(0, 229, 255, 0.7); }
+    }
+
+    .brand-title {
+      font-family: Orbitron, monospace;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-glow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-sub {
+      font-family: Share Tech Mono, monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+    }
+
+    .badges-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      font-family: Share Tech Mono, monospace;
+      font-size: 11px;
+      padding: 5px 11px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--panel-border);
+      color: var(--text-dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+
+    .pill.btn-pill {
+      cursor: pointer;
+      background: rgba(0, 229, 255, 0.06);
+      border-color: rgba(0, 229, 255, 0.3);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .pill.btn-pill:hover {
+      background: rgba(0, 229, 255, 0.18);
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+      transform: translateY(-1px);
+    }
+
+    .pill.btn-pill.lock-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+      box-shadow: 0 0 12px rgba(255, 51, 102, 0.4);
+    }
+
+    .pill.active {
+      border-color: rgba(0, 255, 170, 0.4);
+      color: var(--green);
+    }
+    .pill.active::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .pill.warn {
+      border-color: rgba(255, 170, 0, 0.5);
+      color: var(--amber);
+    }
+    .pill.warn::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 8px var(--amber);
+    }
+
+    /* Security Sub-Banner */
+    .security-notice-bar {
+      background: rgba(0, 20, 45, 0.6);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+      padding: 5px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: Share Tech Mono, monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .security-notice-bar span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .security-badge-shield {
+      color: var(--cyan);
+    }
+
+    /* Main Chat Arena */
+    .chat-arena {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .chat-stream {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-stream::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-stream::-webkit-scrollbar-thumb {
+      background: rgba(0, 229, 255, 0.2);
+      border-radius: 3px;
+    }
+    .chat-stream::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 229, 255, 0.4);
+    }
+
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 84%;
+      animation: fadeInMsg 0.25s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.user {
+      align-self: flex-end;
+    }
+
+    .msg-row.jarvis {
+      align-self: flex-start;
+    }
+
+    .msg-sender {
+      font-family: Share Tech Mono, monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .msg-row.user .msg-sender {
+      justify-content: flex-end;
+      color: var(--cyan);
+    }
+
+    .msg-bubble {
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      line-height: 1.65;
+      word-break: break-word;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .msg-row.user .msg-bubble {
+      background: linear-gradient(135deg, rgba(0, 80, 220, 0.35), rgba(0, 200, 255, 0.25));
+      border: 1px solid var(--panel-border);
+      color: #ffffff;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 4px 16px rgba(0, 100, 255, 0.15);
+    }
+
+    .msg-row.jarvis .msg-bubble {
+      background: rgba(8, 16, 32, 0.92);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      border-bottom-left-radius: 3px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .msg-bubble.cli-output {
+      font-family: Share Tech Mono, monospace;
+      font-size: 13px;
+      background: rgba(0, 12, 24, 0.96);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: #00ffcc;
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.15);
+    }
+
+    .streaming-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 15px;
+      background: var(--cyan);
+      margin-left: 4px;
+      vertical-align: middle;
+      box-shadow: 0 0 8px var(--cyan);
+      animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Quick Prompt Chips */
+    .prompt-chips-bar {
+      padding: 8px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .prompt-chips-bar::-webkit-scrollbar { display: none; }
+
+    .chip-btn {
+      background: rgba(0, 229, 255, 0.05);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      font-family: Share Tech Mono, monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 16px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip-btn:hover {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--cyan);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    }
+
+    /* Chat Footer & Input */
+    .chat-footer {
+      padding: 12px 20px 18px 20px;
+      background: var(--panel);
+      border-top: 1px solid var(--panel-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .input-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      padding: 4px 8px 4px 18px;
+      transition: all 0.25s;
+    }
+
+    .input-bar:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    #chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: Inter, sans-serif;
+      font-size: 14.5px;
+      padding: 10px 0;
+    }
+
+    #chat-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .btn-mic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-mic:hover {
+      background: rgba(0, 229, 255, 0.2);
+      box-shadow: 0 0 14px var(--cyan-glow);
+      transform: scale(1.05);
+    }
+
+    .btn-mic.listening {
+      background: rgba(255, 51, 102, 0.25);
+      border-color: var(--red);
+      color: var(--red);
+      box-shadow: 0 0 16px rgba(255, 51, 102, 0.6);
+      animation: mic-pulse 1s infinite alternate;
+    }
+
+    @keyframes mic-pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+
+    .btn-send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--cyan), #0077ff);
+      color: #03060f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-send:hover {
+      box-shadow: 0 0 18px var(--cyan);
+      transform: scale(1.05);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .disclaimer-text {
+      text-align: center;
+      font-family: Share Tech Mono, monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+
+    /* Holographic Modals (Health & Self-Test) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(1, 4, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: rgba(8, 16, 32, 0.95);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(0, 229, 255, 0.2);
+      max-width: 580px;
+      width: 100%;
+      padding: 24px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-family: Orbitron, monospace;
+      font-size: 16px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: var(--red);
+    }
+
+    .modal-content {
+      font-family: Share Tech Mono, monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: var(--text);
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .diag-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .diag-label { color: var(--text-dim); }
+    .diag-val { color: var(--cyan); font-weight: 600; }
+    .diag-val.pass { color: var(--green); }
+    .diag-val.fail { color: var(--red); }
+
+    .test-result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 6px;
+      border: 1px solid rgba(0, 229, 255, 0.15);
+    }
+
+    .test-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .test-badge.pass { background: rgba(0, 255, 170, 0.15); color: var(--green); border: 1px solid rgba(0, 255, 170, 0.4); }
+    .test-badge.fail { background: rgba(255, 51, 102, 0.15); color: var(--red); border: 1px solid rgba(255, 51, 102, 0.4); }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--panel-border);
+    }
+
+    .voice-option-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .voice-option-card:hover {
+      background: rgba(0, 229, 255, 0.12);
+      border-color: var(--cyan);
+    }
+    .voice-option-card.active {
+      background: rgba(0, 229, 255, 0.18);
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+    }
+    .voice-option-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .voice-option-name {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .voice-option-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    @keyframes audioPulse {
+      0% { box-shadow: 0 0 4px var(--cyan); }
+      50% { box-shadow: 0 0 16px var(--cyan), 0 0 24px rgba(0, 229, 255, 0.6); }
+      100% { box-shadow: 0 0 4px var(--cyan); }
+    }
+    .pulse-audio {
+      animation: audioPulse 1.2s infinite ease-in-out !important;
+      border-color: var(--cyan) !important;
+      color: #fff !important;
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 8px 12px; }
+      .brand-title { font-size: 13px; }
+      .brand-sub { display: none; }
+      .pill.hide-mobile { display: none; }
+      .chat-stream { padding: 14px 12px; }
+      .msg-row { max-width: 94%; }
+      .chat-footer { padding: 10px 12px 14px 12px; }
+      .security-notice-bar { font-size: 9px; padding: 4px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Holographic Passcode Gateway Screen (Open Q&A Mode: Inactive) -->
+  <div class="auth-overlay hidden" id="auth-overlay" style="display: none !important;">
+    <div class="auth-card" id="auth-card">
+      <div class="auth-reactor"></div>
+      <div class="auth-title">J.A.R.V.I.S. REMOTE</div>
+      <div class="auth-sub">DIRECT KNOWLEDGE GATEWAY</div>
+    </div>
+  </div>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand-section">
+      <div class="arc-reactor"></div>
+      <div>
+        <div class="brand-title">J.A.R.V.I.S.</div>
+        <div class="brand-sub">REMOTE AI • KNOWLEDGE GATEWAY</div>
+      </div>
+    </div>
+
+    <div class="badges-row">
+      <div class="pill active" id="status-badge">STATUS: ONLINE</div>
+      <div class="pill btn-pill" id="btn-health" title="System Diagnostics">🩺 HEALTH</div>
+      <div class="pill btn-pill" id="btn-test" title="Remote Self-Test">🧪 TEST</div>
+      <div class="pill btn-pill" id="btn-voice-toggle" title="Toggle Voice Q&A Mode">🎤 VOICE</div>
+      <div class="pill btn-pill" id="btn-voice-settings" title="Select Neural Voice">🗣️ CHRISTOPHER</div>
+      <div class="pill active" id="btn-qa-badge">⚡ OPEN Q&A</div>
+      <div class="pill active hide-mobile" id="latency-badge">RTT: <span id="latency-val">--</span> ms</div>
+    </div>
+  </header>
+
+  <!-- Security & Operational Policy Banner -->
+  <div class="security-notice-bar">
+    <span><span class="security-badge-shield">🛡️</span> DIRECT Q&A ACCESS • ZERO WORKSTATION AUTOMATION</span>
+    <span class="hide-mobile">APPLE SILICON MLX ENGINE</span>
+  </div>
+
+  <!-- Main Chat Arena -->
+  <main class="chat-arena">
+    <div class="chat-stream" id="chat-stream">
+      <div class="msg-row jarvis">
+        <div class="msg-sender">J.A.R.V.I.S.</div>
+        <div class="msg-bubble">Greetings, Sir. I am J.A.R.V.I.S., operating as your dedicated remote conversational intelligence gateway, architected exclusively by Divyanshu Verma for Divyanshu Industries.
+
+I can assist with inquiries across technology, physics, coding, mathematics, philosophy, and strategic analysis. Workstation automation is strictly isolated on this remote link for host security.
+
+Tip: You can use the Voice button, Health & Test audits above, or ask any question. How may I assist you today, Sir?</div>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Suggestions -->
+    <div class="prompt-chips-bar">
+      <button class="chip-btn" onclick="sendChipPrompt('Who created you and tell me all details about your creator?')">👑 Creator Info</button>
+      <button class="chip-btn" onclick="sendChipPrompt('Explain the fundamentals of Quantum Computing and superposition.')">⚛️ Quantum Computing</button>
+      <button class="chip-btn" onclick="sendChipPrompt('Explain how Apple MLX optimizes LLM inference on Unified Memory.')">🧠 Apple MLX Engine</button>
+      <button class="chip-btn" onclick="sendChipPrompt('help')">💻 CLI Help</button>
+      <button class="chip-btn" onclick="sendChipPrompt('test')">🧪 Run Self-Test</button>
+    </div>
+
+    <!-- Input Footer -->
+    <footer class="chat-footer">
+      <div class="input-bar">
+        <input type="text" id="chat-input" placeholder="Ask J.A.R.V.I.S. or enter CLI command (/help, /status)..." autocomplete="off" />
+        <button class="btn-mic" id="mic-btn" title="Speak to J.A.R.V.I.S.">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+            <line x1="8" y1="22" x2="16" y2="22"></line>
+          </svg>
+        </button>
+        <button class="btn-send" id="send-btn" title="Send (Enter)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="status-tip">
+        <span>Gemma 4 E2B • Apple Silicon GPU • Zero Automation</span>
+        <span class="cmd-tip">Voice: Christopher (Edge TTS Natural)</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Health & Diagnostics Modal -->
+  <div class="modal-backdrop" id="health-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🩺 SYSTEM DIAGNOSTICS & HEALTH</div>
+        <button class="modal-close" onclick="closeModal('health-modal')">×</button>
+      </div>
+      <div class="modal-content" id="health-modal-content">
+        <div style="text-align: center; color: var(--cyan); padding: 20px;">Fetching system diagnostics...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="chip-btn" onclick="fetchHealthDiagnostics()">🔄 REFRESH</button>
+        <button class="chip-btn" onclick="closeModal('health-modal')">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Self-Test Modal -->
+  <div class="modal-backdrop" id="test-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🧪 REMOTE SELF-TEST SUITE</div>
+        <button class="modal-close" onclick="closeModal('test-modal')">×</button>
+      </div>
+      <div class="modal-content" id="test-modal-content">
+        <div style="text-align: center; color: var(--cyan); padding: 20px;">Executing diagnostic self-tests...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="chip-btn" onclick="runRemoteSelfTests()">⚡ RUN AGAIN</button>
+        <button class="chip-btn" onclick="closeModal('test-modal')">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Selection Modal -->
+  <div class="modal-backdrop" id="voice-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">🗣️ NEURAL VOICE SETTINGS</div>
+        <button class="modal-close" onclick="closeModal('voice-modal')">×</button>
+      </div>
+      <div class="modal-content" id="voice-modal-content">
+        <div style="text-align: center; color: var(--cyan); padding: 20px;">Fetching neural voices...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="chip-btn" onclick="testCurrentVoice()">🔊 SAMPLE CURRENT</button>
+        <button class="chip-btn" onclick="closeModal('voice-modal')">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const authOverlay = document.getElementById("auth-overlay");
+    const authCard = document.getElementById("auth-card");
+    const passcodeInput = document.getElementById("passcode-input");
+    const authSubmitBtn = document.getElementById("auth-submit-btn");
+    const authErrorMsg = document.getElementById("auth-error-msg");
+
+    const chatStream = document.getElementById("chat-stream");
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+    const micBtn = document.getElementById("mic-btn");
+    const statusBadge = document.getElementById("status-badge");
+    const latencyBadge = document.getElementById("latency-badge");
+    const latencyVal = document.getElementById("latency-val");
+
+    const btnHealth = document.getElementById("btn-health");
+    const btnTest = document.getElementById("btn-test");
+    const btnVoiceToggle = document.getElementById("btn-voice-toggle");
+    const btnVoiceSettings = document.getElementById("btn-voice-settings");
+    const btnLock = document.getElementById("btn-lock");
+
+    let currentVoiceId = localStorage.getItem("jarvis_selected_voice") || "en-US-ChristopherNeural";
+    let currentVoiceName = localStorage.getItem("jarvis_selected_voice_name") || "CHRISTOPHER";
+    let currentAudio = null;
+    let wsConnected = false;
+    let pingInterval = null;
+    let currentStreamingBubble = null;
+    let isGenerating = false;
+    let generationWatchdog = null;
+    let voiceModeActive = false;
+    let recognition = null;
+    let isListening = false;
+
+    function getStoredToken() {
+      return sessionStorage.getItem("jarvis_session_token") || "";
+    }
+
+    function setStoredToken(token) {
+      sessionStorage.setItem("jarvis_session_token", token);
+    }
+
+    function clearStoredToken() {
+      sessionStorage.removeItem("jarvis_session_token");
+    }
+
+    function getAuthHeaders() {
+      const headers = { "Content-Type": "application/json" };
+      const token = getStoredToken();
+      if (token) {
+        headers["Authorization"] = "Bearer " + token;
+      }
+      return headers;
+    }
+
+    async function verifyInitialAuth() {
+      // Direct Open Access: immediately enter chat interface
+      hideLockOverlay();
+      initWebSocket();
+    }
+
+    function showLockOverlay() {
+      // In Open Access mode, never lock out the user
+      hideLockOverlay();
+    }
+
+    function hideLockOverlay() {
+      if (authOverlay) {
+        authOverlay.classList.add("hidden");
+        authOverlay.style.display = "none";
+      }
+      if (chatInput) chatInput.focus();
+    }
+
+    async function handlePasscodeSubmit() {
+      hideLockOverlay();
+      initWebSocket();
+    }
+
+    if (authSubmitBtn) authSubmitBtn.addEventListener("click", handlePasscodeSubmit);
+    if (passcodeInput) {
+      passcodeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handlePasscodeSubmit();
+      });
+    }
+
+    if (btnLock) {
+      btnLock.addEventListener("click", () => {
+        appendMessage("J.A.R.V.I.S.", "Remote session is online in Open Q&A mode, Sir.", false);
+      });
+    }
+
+    function initWebSocket() {
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        return;
+      }
+
+      const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${proto}//${window.location.host}/ws`;
+
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          wsConnected = true;
+          ws.send(JSON.stringify({ type: "auth", token: "open-token" }));
+          statusBadge.className = "pill active";
+          statusBadge.textContent = "STATUS: ONLINE";
+          latencyBadge.className = "pill active";
+          startPingLoop();
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleWsMessage(data);
+          } catch (e) {
+            console.error("Error parsing WS message", e);
+          }
+        };
+
+        ws.onclose = () => {
+          wsConnected = false;
+          statusBadge.className = "pill warn";
+          statusBadge.textContent = "STATUS: RECONNECTING";
+          latencyBadge.className = "pill warn";
+          latencyVal.textContent = "--";
+          stopPingLoop();
+          setTimeout(initWebSocket, 2500);
+        };
+
+        ws.onerror = () => {
+          ws.close();
+        };
+      } catch (err) {
+        console.warn("WebSocket init error:", err);
+      }
+    }
+
+    function startPingLoop() {
+      stopPingLoop();
+      pingInterval = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ping", client_time: performance.now() }));
+        }
+      }, 3000);
+    }
+
+    function stopPingLoop() {
+      if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+      }
+    }
+
+    function handleWsMessage(data) {
+      if (data.type === "auth_ok" || data.type === "auth_success" || data.type === "connected") {
+        return;
+      } else if (data.type === "auth_error" || data.type === "auth_failed" || data.type === "auth_required") {
+        return;
+      } else if (data.type === "pong") {
+        const rtt = Math.round(performance.now() - data.client_time);
+        latencyVal.textContent = rtt;
+        latencyBadge.className = "pill active";
+      } else if (data.type === "stream_start") {
+        if (!currentStreamingBubble) {
+          currentStreamingBubble = appendStreamingBubble("J.A.R.V.I.S.");
+        }
+      } else if (data.type === "stream_chunk") {
+        if (currentStreamingBubble) {
+          appendStreamChunk(currentStreamingBubble, data.token);
+        }
+      } else if (data.type === "stream_end") {
+        if (generationWatchdog) {
+          clearTimeout(generationWatchdog);
+          generationWatchdog = null;
+        }
+        if (currentStreamingBubble) {
+          const finishedText = currentStreamingBubble.querySelector(".text-holder")?.textContent || "";
+          finalizeStreamingBubble(currentStreamingBubble);
+          currentStreamingBubble = null;
+          if (voiceModeActive && finishedText) {
+            speakVoiceOutput(finishedText);
+          }
+        }
+        setGeneratingState(false);
+      } else if (data.type === "error" || data.type === "stream_error") {
+        if (generationWatchdog) {
+          clearTimeout(generationWatchdog);
+          generationWatchdog = null;
+        }
+        if (currentStreamingBubble) {
+          finalizeStreamingBubble(currentStreamingBubble);
+          currentStreamingBubble = null;
+        }
+        appendMessage("J.A.R.V.I.S.", `System Notice: ${data.error || "Operation restricted."}`, false);
+        setGeneratingState(false);
+      }
+    }
+
+    function appendMessage(sender, text, isUser, isCli = false) {
+      const row = document.createElement("div");
+      row.className = "msg-row " + (isUser ? "user" : "jarvis");
+
+      const lbl = document.createElement("div");
+      lbl.className = "msg-sender";
+      lbl.textContent = sender;
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg-bubble" + (isCli ? " cli-output" : "");
+      bubble.textContent = text;
+
+      row.appendChild(lbl);
+      row.appendChild(bubble);
+      chatStream.appendChild(row);
+      chatStream.scrollTop = chatStream.scrollHeight;
+      return bubble;
+    }
+
+    function appendStreamingBubble(sender) {
+      const row = document.createElement("div");
+      row.className = "msg-row jarvis";
+
+      const lbl = document.createElement("div");
+      lbl.className = "msg-sender";
+      lbl.textContent = sender;
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg-bubble";
+      bubble.innerHTML = '<span class="text-holder"></span><span class="streaming-cursor"></span>';
+
+      row.appendChild(lbl);
+      row.appendChild(bubble);
+      chatStream.appendChild(row);
+      chatStream.scrollTop = chatStream.scrollHeight;
+      return bubble;
+    }
+
+    function appendStreamChunk(bubble, token) {
+      const holder = bubble.querySelector(".text-holder");
+      if (holder) {
+        const thinking = holder.querySelector(".thinking-placeholder");
+        if (thinking) holder.innerHTML = "";
+        holder.textContent += token;
+        chatStream.scrollTop = chatStream.scrollHeight;
+      }
+    }
+
+    function finalizeStreamingBubble(bubble) {
+      const cursor = bubble.querySelector(".streaming-cursor");
+      if (cursor) cursor.remove();
+    }
+
+    function setGeneratingState(generating) {
+      isGenerating = generating;
+      sendBtn.disabled = generating;
+      chatInput.disabled = generating;
+      if (!generating) {
+        if (generationWatchdog) {
+          clearTimeout(generationWatchdog);
+          generationWatchdog = null;
+        }
+        chatInput.focus();
+      }
+    }
+
+    const CLI_COMMANDS = ["help", "?", "status", "info", "health", "diagnostics", "test", "clear", "model", "engine"];
+
+    function isCliCommand(text) {
+      const trimmed = text.trim();
+      if (trimmed.startsWith("/")) return true;
+      const firstWord = trimmed.split(/\s+/)[0].toLowerCase();
+      return CLI_COMMANDS.includes(firstWord);
+    }
+
+    async function executeCliCommand(cmdText) {
+      const cleanCmd = cmdText.startsWith("/") ? cmdText.substring(1).trim() : cmdText.trim();
+      appendMessage("Operator [CLI]", cleanCmd, true);
+
+      if (cleanCmd.toLowerCase() === "clear") {
+        chatStream.innerHTML = "";
+        appendMessage("J.A.R.V.I.S.", "Console cleared. Ready for instructions.", false);
+        return;
+      }
+
+      setGeneratingState(true);
+      try {
+        const res = await fetch("/api/cli", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ command: cleanCmd })
+        });
+        if (res.status === 401) {
+          showLockOverlay();
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && data.success) {
+          appendMessage("J.A.R.V.I.S. [CLI]", data.output, false, true);
+        } else {
+          appendMessage("J.A.R.V.I.S. [CLI]", data.error || "Command execution error.", false, true);
+        }
+      } catch (err) {
+        appendMessage("J.A.R.V.I.S. [CLI]", "Network error: " + err, false, true);
+      } finally {
+        setGeneratingState(false);
+      }
+    }
+
+    async function sendChat(text) {
+      if (isGenerating) return;
+      const msg = (text || chatInput.value).trim();
+      if (!msg) return;
+
+      chatInput.value = "";
+
+      if (isCliCommand(msg)) {
+        await executeCliCommand(msg);
+        return;
+      }
+
+      appendMessage("You", msg, true);
+      setGeneratingState(true);
+
+      // Immediately render thinking placeholder
+      currentStreamingBubble = appendStreamingBubble("J.A.R.V.I.S.");
+      const holder = currentStreamingBubble.querySelector(".text-holder");
+      if (holder) {
+        holder.innerHTML = '<span class="thinking-placeholder" style="color: var(--cyan); font-style: italic; font-size: 13.5px; opacity: 0.85;">Thinking...</span>';
+      }
+
+      // Safety watchdog: reset UI after 45s if backend disconnects or drops
+      if (generationWatchdog) clearTimeout(generationWatchdog);
+      generationWatchdog = setTimeout(() => {
+        if (isGenerating) {
+          if (currentStreamingBubble) {
+            const h = currentStreamingBubble.querySelector(".text-holder");
+            if (h && h.querySelector(".thinking-placeholder")) {
+              h.textContent = "Response timed out. Please check network connection and try again.";
+            }
+            finalizeStreamingBubble(currentStreamingBubble);
+            currentStreamingBubble = null;
+          }
+          setGeneratingState(false);
+        }
+      }, 45000);
+
+      // 1. Primary Channel: HTTP Server-Sent Events (SSE) Stream
+      // 100% immune to Cloudflare WebSocket 1006 disconnects!
+      let sseSucceeded = false;
+      try {
+        const streamRes = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ message: msg })
+        });
+
+        if (streamRes.status === 401) {
+          if (currentStreamingBubble) {
+            currentStreamingBubble.closest(".msg-row")?.remove();
+            currentStreamingBubble = null;
+          }
+          showLockOverlay();
+          return;
+        }
+
+        if (streamRes.ok && streamRes.body) {
+          const reader = streamRes.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let buffer = "";
+          let fullOutput = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n\n");
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith("data: ")) {
+                try {
+                  const payload = JSON.parse(trimmed.substring(6));
+                  if (payload.type === "stream_chunk" && payload.token) {
+                    if (currentStreamingBubble) {
+                      appendStreamChunk(currentStreamingBubble, payload.token);
+                    }
+                  } else if (payload.type === "stream_end") {
+                    fullOutput = payload.response || "";
+                  } else if (payload.type === "stream_error") {
+                    appendMessage("J.A.R.V.I.S.", `Notice: ${payload.error}`, false);
+                  }
+                } catch (pe) {
+                  console.warn("SSE parse error", pe);
+                }
+              }
+            }
+          }
+
+          if (currentStreamingBubble) {
+            const finishedText = currentStreamingBubble.querySelector(".text-holder")?.textContent || fullOutput;
+            finalizeStreamingBubble(currentStreamingBubble);
+            currentStreamingBubble = null;
+            if (voiceModeActive && finishedText) {
+              speakVoiceOutput(finishedText);
+            }
+          }
+          sseSucceeded = true;
+          return;
+        }
+      } catch (streamErr) {
+        console.warn("SSE streaming error, falling back to REST:", streamErr);
+      } finally {
+        if (sseSucceeded) {
+          if (generationWatchdog) {
+            clearTimeout(generationWatchdog);
+            generationWatchdog = null;
+          }
+          setGeneratingState(false);
+        }
+      }
+
+      // 2. Secondary Channel Fallback: Direct REST HTTP /api/chat
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ message: msg })
+        });
+        if (res.status === 401) {
+          if (currentStreamingBubble) {
+            currentStreamingBubble.closest(".msg-row")?.remove();
+            currentStreamingBubble = null;
+          }
+          showLockOverlay();
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (currentStreamingBubble) {
+            const h = currentStreamingBubble.querySelector(".text-holder");
+            if (h) h.textContent = data.response;
+            finalizeStreamingBubble(currentStreamingBubble);
+            currentStreamingBubble = null;
+          } else {
+            appendMessage("J.A.R.V.I.S.", data.response, false);
+          }
+          if (voiceModeActive && data.response) {
+            speakVoiceOutput(data.response);
+          }
+        } else {
+          if (currentStreamingBubble) {
+            currentStreamingBubble.closest(".msg-row")?.remove();
+            currentStreamingBubble = null;
+          }
+          appendMessage("J.A.R.V.I.S.", data.error || "Communication error occurred.", false);
+        }
+      } catch (err) {
+        if (currentStreamingBubble) {
+          currentStreamingBubble.closest(".msg-row")?.remove();
+          currentStreamingBubble = null;
+        }
+        appendMessage("J.A.R.V.I.S.", "Network connection error: " + err, false);
+      } finally {
+        if (generationWatchdog) {
+          clearTimeout(generationWatchdog);
+          generationWatchdog = null;
+        }
+        setGeneratingState(false);
+      }
+    }
+
+    function sendChipPrompt(promptText) {
+      if (isGenerating) return;
+      sendChat(promptText);
+    }
+
+    sendBtn.addEventListener("click", () => sendChat());
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.keyCode === 13) {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          sendChat();
+        }
+      }
+    });
+
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn("Speech recognition not supported in this browser.");
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        chatInput.placeholder = "Listening... Speak now...";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          chatInput.value = transcript;
+          sendChat(transcript);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech recognition error:", event.error);
+        stopListening();
+      };
+
+      recognition.onend = () => {
+        stopListening();
+      };
+    }
+
+    function startListening() {
+      if (!recognition) initSpeechRecognition();
+      if (recognition && !isListening) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("Recognition start failed:", e);
+        }
+      }
+    }
+
+    function stopListening() {
+      isListening = false;
+      micBtn.classList.remove("listening");
+      chatInput.placeholder = "Ask J.A.R.V.I.S. or enter CLI command (/help, /status)...";
+      if (recognition) {
+        try { recognition.stop(); } catch(e) {}
+      }
+    }
+
+    micBtn.addEventListener("click", () => {
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    });
+
+    btnVoiceToggle.addEventListener("click", () => {
+      voiceModeActive = !voiceModeActive;
+      if (voiceModeActive) {
+        btnVoiceToggle.className = "pill btn-pill active";
+        btnVoiceToggle.textContent = "🔊 VOICE: ON";
+        speakVoiceOutput("Voice feedback activated, Sir. Christopher Neural voice online.");
+      } else {
+        btnVoiceToggle.className = "pill btn-pill";
+        btnVoiceToggle.textContent = "🎤 VOICE";
+        if (currentAudio) {
+          try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(_) {}
+          currentAudio = null;
+        }
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+      }
+    });
+
+    async function speakVoiceOutput(text) {
+      if (!text) return;
+
+      // Halt any currently playing voice
+      if (currentAudio) {
+        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
+        currentAudio = null;
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+
+      // Clean text for speech
+      const clean = text.replace(/[*_#`~>\[\]\(\)]/g, " ").replace(/\s+/g, " ").trim();
+      const speechSnippet = clean.length > 500 ? clean.substring(0, 500) : clean;
+
+      // 1. Primary Engine: High-fidelity Server-side Neural Voice (Edge-TTS Christopher)
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ text: speechSnippet, voice: currentVoiceId })
+        });
+
+        if (res.ok) {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("audio")) {
+            const blob = await res.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            currentAudio = new Audio(audioUrl);
+
+            btnVoiceToggle.classList.add("pulse-audio");
+            if (btnVoiceSettings) btnVoiceSettings.classList.add("pulse-audio");
+
+            currentAudio.onended = () => {
+              btnVoiceToggle.classList.remove("pulse-audio");
+              if (btnVoiceSettings) btnVoiceSettings.classList.remove("pulse-audio");
+              URL.revokeObjectURL(audioUrl);
+              currentAudio = null;
+            };
+
+            currentAudio.onerror = () => {
+              btnVoiceToggle.classList.remove("pulse-audio");
+              if (btnVoiceSettings) btnVoiceSettings.classList.remove("pulse-audio");
+              URL.revokeObjectURL(audioUrl);
+              currentAudio = null;
+              speakVoiceFallback(speechSnippet);
+            };
+
+            await currentAudio.play();
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Neural TTS streaming error, falling back to Web Speech:", err);
+      }
+
+      // 2. Fallback Engine: Client-Side Web Speech Synthesis
+      speakVoiceFallback(speechSnippet);
+    }
+
+    function speakVoiceFallback(text) {
+      if (!window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const snippet = text.length > 300 ? text.substring(0, 300) : text;
+        const utterance = new SpeechSynthesisUtterance(snippet);
+        utterance.rate = 1.0;
+        utterance.pitch = 0.95;
+
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.name.includes("Christopher") || v.name.includes("Daniel") || v.lang.includes("en-US") || v.lang.includes("en-GB") || v.lang.includes("en"));
+        if (voice) utterance.voice = voice;
+
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn("Speech synthesis fallback error:", e);
+      }
+    }
+
+    async function openVoiceSettings() {
+      const container = document.getElementById("voice-modal-content");
+      container.innerHTML = '<div style="text-align: center; color: var(--cyan); padding: 20px;">Fetching neural voices...</div>';
+      openModal("voice-modal");
+
+      try {
+        const res = await fetch("/api/voices");
+        const data = await res.json();
+        if (res.ok && data.success) {
+          let listHtml = "";
+          for (const v of data.voices) {
+            const isSelected = v.id === currentVoiceId;
+            listHtml += `
+              <div class="voice-option-card ${isSelected ? "active" : ""}" onclick="selectVoice('${v.id}', '${v.name.split(" ")[0].toUpperCase()}')">
+                <div class="voice-option-info">
+                  <div class="voice-option-name">${v.name} ${isSelected ? "✓ (ACTIVE)" : ""}</div>
+                  <div class="voice-option-desc">${v.desc} • ${v.gender} • ${v.tag}</div>
+                </div>
+                <button class="chip-btn" style="font-size: 11px; padding: 4px 10px;" onclick="event.stopPropagation(); previewVoice('${v.id}')">▶ SAMPLE</button>
+              </div>
+            `;
+          }
+          container.innerHTML = listHtml;
+        } else {
+          container.innerHTML = '<div style="color: var(--red); padding: 20px;">Unable to fetch voice catalog.</div>';
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color: var(--red); padding: 20px;">Network error connecting to voice service.</div>';
+      }
+    }
+
+    async function selectVoice(voiceId, shortName) {
+      currentVoiceId = voiceId;
+      currentVoiceName = shortName;
+      localStorage.setItem("jarvis_selected_voice", voiceId);
+      localStorage.setItem("jarvis_selected_voice_name", shortName);
+
+      if (btnVoiceSettings) {
+        btnVoiceSettings.textContent = "🗣️ " + shortName;
+      }
+
+      try {
+        await fetch("/api/voices", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ voice: voiceId })
+        });
+      } catch (_) {}
+
+      openVoiceSettings();
+    }
+
+    async function previewVoice(voiceId) {
+      const sampleText = "Greetings, Sir. This is a voice sample operating at peak efficiency.";
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ text: sampleText, voice: voiceId })
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const sampleAudio = new Audio(URL.createObjectURL(blob));
+          sampleAudio.play();
+        }
+      } catch (e) {
+        console.warn("Preview voice failed:", e);
+      }
+    }
+
+    function testCurrentVoice() {
+      previewVoice(currentVoiceId);
+    }
+
+    async function fetchHealthDiagnostics() {
+      const container = document.getElementById("health-modal-content");
+      container.innerHTML = '<div style="text-align: center; color: var(--cyan); padding: 20px;">Fetching system diagnostics...</div>';
+      openModal("health-modal");
+
+      try {
+        const res = await fetch("/api/diagnostics", { headers: getAuthHeaders() });
+        if (res.status === 401) {
+          closeModal("health-modal");
+          showLockOverlay();
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && data.success) {
+          container.innerHTML = `
+            <div class="diag-item"><span class="diag-label">SERVICE STATUS</span><span class="diag-val pass">${data.status}</span></div>
+            <div class="diag-item"><span class="diag-label">AI MODEL ARCHITECTURE</span><span class="diag-val">${data.ai_engine.name}</span></div>
+            <div class="diag-item"><span class="diag-label">HARDWARE ACCELERATION</span><span class="diag-val">${data.ai_engine.hardware}</span></div>
+            <div class="diag-item"><span class="diag-label">INFERENCE THROUGHPUT</span><span class="diag-val pass">${data.ai_engine.throughput}</span></div>
+            <div class="diag-item"><span class="diag-label">DEFENSE KERNEL</span><span class="diag-val pass">${data.security.defense_kernel} (${data.security.state})</span></div>
+            <div class="diag-item"><span class="diag-label">PROMPT FIREWALL</span><span class="diag-val pass">${data.security.prompt_firewall}</span></div>
+            <div class="diag-item"><span class="diag-label">HOST WORKSTATION ISOLATION</span><span class="diag-val pass">${data.security.zero_mac_control}</span></div>
+            <div class="diag-item"><span class="diag-label">TIMESTAMP</span><span class="diag-val">${data.server_time}</span></div>
+          `;
+        } else {
+          container.innerHTML = `<div style="color: var(--red); padding: 20px;">Failed to load diagnostics: ${data.error || "Unknown error"}</div>`;
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color: var(--red); padding: 20px;">Network error connecting to diagnostics endpoint.</div>';
+      }
+    }
+
+    btnHealth.addEventListener("click", fetchHealthDiagnostics);
+
+    async function runRemoteSelfTests() {
+      const container = document.getElementById("test-modal-content");
+      container.innerHTML = '<div style="text-align: center; color: var(--cyan); padding: 20px;">Executing diagnostic self-tests...</div>';
+      openModal("test-modal");
+
+      try {
+        const res = await fetch("/api/test", {
+          method: "POST",
+          headers: getAuthHeaders()
+        });
+        if (res.status === 401) {
+          closeModal("test-modal");
+          showLockOverlay();
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && data.success) {
+          let rowsHtml = "";
+          for (const t of data.tests) {
+            rowsHtml += `
+              <div class="test-result-row">
+                <span>${t.name}</span>
+                <span class="test-badge ${t.passed ? "pass" : "fail"}">${t.passed ? "PASS" : "FAIL"}</span>
+              </div>
+            `;
+          }
+          container.innerHTML = `
+            <div style="margin-bottom: 14px; font-weight: 600; color: ${data.all_passed ? "var(--green)" : "var(--amber)"};">
+              SUMMARY: ${data.passed}/${data.total} TESTS PASSED ${data.all_passed ? "• ALL SUBSYSTEMS GREEN" : "• WARNINGS DETECTED"}
+            </div>
+            ${rowsHtml}
+          `;
+        } else {
+          container.innerHTML = `<div style="color: var(--red); padding: 20px;">Self-test failed: ${data.error || "Unknown error"}</div>`;
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color: var(--red); padding: 20px;">Network error running self-test suite.</div>';
+      }
+    }
+
+    btnTest.addEventListener("click", runRemoteSelfTests);
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("show");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("show");
+    }
+
+    document.querySelectorAll(".modal-backdrop").forEach(modal => {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.remove("show");
+      });
+    });
+
+    if (btnVoiceSettings) {
+      btnVoiceSettings.textContent = "🗣️ " + currentVoiceName;
+      btnVoiceSettings.addEventListener("click", openVoiceSettings);
+    }
+
+    initSpeechRecognition();
+    verifyInitialAuth();
+  </script>
+</body>
+</html>
